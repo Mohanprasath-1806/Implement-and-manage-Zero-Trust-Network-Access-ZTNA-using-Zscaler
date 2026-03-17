@@ -1,0 +1,1178 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive ZTNA connection flow demo.">
+    <title>ZTNA using Zscaler | Demo</title>
+    <style>
+/* Core design tokens for the cyber-themed project website */
+:root {
+    --bg: #050816;
+    --bg-alt: #081226;
+    --bg-panel: rgba(10, 22, 43, 0.74);
+    --border: rgba(109, 194, 255, 0.22);
+    --line: rgba(109, 194, 255, 0.35);
+    --text: #e8f3ff;
+    --muted: #93a8c9;
+    --accent: #45c8ff;
+    --accent-strong: #00f0ff;
+    --accent-soft: rgba(69, 200, 255, 0.18);
+    --success: #4fffb0;
+    --danger: #ff648f;
+    --shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+    --radius: 24px;
+    --radius-sm: 16px;
+    --max-width: 1180px;
+    --heading-font: "Segoe UI Variable", "Bahnschrift", "Trebuchet MS", sans-serif;
+    --body-font: "Segoe UI", "Verdana", sans-serif;
+    --mono-font: "Consolas", "Lucida Console", monospace;
+}
+
+/* Global reset and base styles */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--body-font);
+    color: var(--text);
+    background:
+        radial-gradient(circle at top left, rgba(0, 122, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 85% 20%, rgba(0, 240, 255, 0.12), transparent 24%),
+        linear-gradient(180deg, #040712 0%, #050816 42%, #03040a 100%);
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(69, 200, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(69, 200, 255, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 90%);
+    pointer-events: none;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.container {
+    width: min(100% - 2rem, var(--max-width));
+    margin: 0 auto;
+}
+
+.page-main {
+    padding-top: 5rem;
+}
+
+.section-shell {
+    padding: 4.5rem 0;
+}
+
+.alt-shell {
+    background: linear-gradient(180deg, rgba(11, 21, 39, 0.66), rgba(4, 11, 22, 0.2));
+}
+
+.cta-shell {
+    padding-top: 1rem;
+    padding-bottom: 5rem;
+}
+
+.section-gap {
+    margin-top: 2rem;
+}
+
+.section-heading {
+    max-width: 760px;
+    margin-bottom: 2rem;
+}
+
+.section-heading h2,
+.page-hero h1,
+.hero-copy h1,
+.cta-card h2 {
+    font-family: var(--heading-font);
+    letter-spacing: 0.02em;
+}
+
+.eyebrow {
+    margin: 0 0 0.8rem;
+    color: var(--accent-strong);
+    font-size: 0.86rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+}
+
+.lead {
+    color: var(--muted);
+    font-size: 1.08rem;
+    line-height: 1.7;
+    max-width: 62ch;
+}
+
+.glass-card {
+    background: linear-gradient(180deg, rgba(9, 19, 37, 0.88), rgba(6, 13, 26, 0.76));
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
+    backdrop-filter: blur(12px);
+}
+
+/* Navigation */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(4, 9, 18, 0.8);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(109, 194, 255, 0.1);
+}
+
+.nav-shell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 78px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--heading-font);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    font-size: 0.95rem;
+}
+
+.brand-mark {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-strong), var(--accent));
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.75);
+}
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.site-nav a,
+.nav-toggle {
+    border: 1px solid transparent;
+    color: var(--muted);
+    padding: 0.72rem 0.92rem;
+    border-radius: 999px;
+    transition: 180ms ease;
+}
+
+.site-nav a:hover,
+.site-nav a.active,
+.nav-toggle:hover {
+    color: var(--text);
+    border-color: rgba(69, 200, 255, 0.26);
+    background: rgba(69, 200, 255, 0.08);
+}
+
+.nav-toggle {
+    display: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Hero */
+.hero-panel {
+    padding: 7rem 0 4rem;
+}
+
+.hero-grid,
+.split-layout,
+.demo-grid,
+.footer-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.hero-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+}
+
+.hero-copy h1 {
+    font-size: clamp(2.4rem, 5vw, 4.8rem);
+    line-height: 1.05;
+    margin: 0 0 1rem;
+}
+
+.hero-actions,
+.cta-actions,
+.demo-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 0.85rem 1.35rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+}
+
+.button-primary {
+    background: linear-gradient(135deg, rgba(69, 200, 255, 0.9), rgba(0, 240, 255, 0.65));
+    color: #03111e;
+    box-shadow: 0 12px 28px rgba(0, 179, 255, 0.24);
+}
+
+.button-secondary {
+    background: rgba(69, 200, 255, 0.08);
+    border-color: rgba(69, 200, 255, 0.24);
+    color: var(--text);
+}
+
+.hero-stats,
+.card-grid,
+.status-list,
+.content-stack,
+.implementation-stack {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.hero-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 2rem;
+}
+
+.stat-card {
+    padding: 1.15rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-family: var(--heading-font);
+    color: var(--accent-strong);
+}
+
+.stat-label,
+.site-footer p,
+.site-footer li,
+.content-card p,
+.feature-card p,
+.step-card p,
+.info-list span,
+.status-list span {
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.hero-visual {
+    position: relative;
+    min-height: 460px;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(10px);
+}
+
+.orb-one {
+    inset: 20% auto auto 0;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(69, 200, 255, 0.45), transparent 70%);
+}
+
+.orb-two {
+    inset: auto 10% 0 auto;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.26), transparent 72%);
+}
+
+.control-panel {
+    position: absolute;
+    inset: 2rem 1rem 2rem 3rem;
+    padding: 1.4rem;
+    overflow: hidden;
+}
+
+.panel-topline {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--muted);
+    font-family: var(--mono-font);
+    font-size: 0.92rem;
+    margin-bottom: 1.4rem;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 16px rgba(79, 255, 176, 0.72);
+}
+
+.signal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.signal-node,
+.mini-card,
+.demo-node,
+.arch-node,
+.workflow-step,
+.step-card,
+.content-card,
+.feature-card,
+.system-status,
+.demo-console {
+    position: relative;
+    overflow: hidden;
+}
+
+.signal-node {
+    padding: 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(69, 200, 255, 0.2);
+    background: rgba(69, 200, 255, 0.05);
+    color: var(--muted);
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+}
+
+.signal-node.active-node {
+    color: var(--text);
+    border-color: rgba(0, 240, 255, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(0, 240, 255, 0.16), 0 0 18px rgba(0, 240, 255, 0.08);
+}
+
+.scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 20%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.7), transparent);
+    animation: scan 4.8s linear infinite;
+}
+
+/* Layout grids */
+.three-up {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.two-up,
+.split-layout,
+.demo-grid,
+.footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.four-up {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.architecture-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: 1.5rem;
+}
+
+.align-start {
+    align-items: start;
+}
+
+.feature-card,
+.content-card,
+.step-card,
+.system-status,
+.demo-console,
+.cta-card,
+.timeline-panel,
+.diagram-card,
+.workflow-track {
+    padding: 1.4rem;
+}
+
+.feature-icon {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    color: var(--accent-strong);
+    border-radius: 16px;
+    background: rgba(69, 200, 255, 0.08);
+    border: 1px solid rgba(69, 200, 255, 0.24);
+}
+
+.small-icon {
+    width: 52px;
+    height: 52px;
+}
+
+.key-points,
+.site-footer ul,
+.demo-log {
+    margin: 1rem 0 0;
+    padding-left: 1.1rem;
+}
+
+.key-points li,
+.site-footer li,
+.demo-log li {
+    margin-bottom: 0.7rem;
+    color: var(--muted);
+}
+
+.compact-points {
+    margin-top: 0.6rem;
+}
+
+.comparison-grid,
+.info-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.mini-card {
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(69, 200, 255, 0.16);
+    background: rgba(69, 200, 255, 0.05);
+}
+
+/* Timeline section */
+.timeline-panel {
+    display: grid;
+    gap: 1rem;
+}
+
+.timeline-step {
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    background: rgba(69, 200, 255, 0.05);
+    border: 1px solid rgba(69, 200, 255, 0.14);
+}
+
+.timeline-step span,
+.step-number,
+.workflow-step span {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: #02131f;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    font-weight: 700;
+}
+
+.cta-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* Page hero */
+.page-hero {
+    padding: 6rem 0 1.5rem;
+}
+
+.narrow-hero h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+/* Architecture diagram */
+.diagram-stage {
+    position: relative;
+    min-height: 420px;
+    border-radius: calc(var(--radius) - 8px);
+    border: 1px solid rgba(69, 200, 255, 0.14);
+    background:
+        linear-gradient(180deg, rgba(2, 10, 20, 0.8), rgba(4, 12, 26, 0.72)),
+        radial-gradient(circle at 20% 20%, rgba(0, 240, 255, 0.09), transparent 24%);
+}
+
+.arch-node {
+    position: absolute;
+    min-width: 180px;
+    padding: 0.95rem 1rem;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px solid rgba(69, 200, 255, 0.24);
+    background: rgba(69, 200, 255, 0.08);
+    color: var(--text);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+}
+
+.node-user {
+    top: 50px;
+    left: 40px;
+}
+
+.node-idp {
+    top: 190px;
+    left: 40px;
+}
+
+.node-zscaler {
+    top: 120px;
+    left: calc(50% - 90px);
+}
+
+.node-policy {
+    top: 120px;
+    right: 90px;
+}
+
+.node-app {
+    bottom: 60px;
+    right: 90px;
+}
+
+.arch-line {
+    position: absolute;
+    background: linear-gradient(90deg, rgba(69, 200, 255, 0.18), rgba(69, 200, 255, 0.7), rgba(69, 200, 255, 0.18));
+    box-shadow: 0 0 18px rgba(69, 200, 255, 0.25);
+}
+
+.line-u-z {
+    top: 137px;
+    left: 220px;
+    width: 250px;
+    height: 2px;
+}
+
+.line-idp-z {
+    top: 255px;
+    left: 220px;
+    width: 250px;
+    height: 2px;
+}
+
+.line-z-p {
+    top: 138px;
+    left: calc(50% + 92px);
+    width: 150px;
+    height: 2px;
+}
+
+.line-p-a {
+    top: 212px;
+    right: 176px;
+    width: 2px;
+    height: 104px;
+    background: linear-gradient(180deg, rgba(69, 200, 255, 0.18), rgba(69, 200, 255, 0.72), rgba(69, 200, 255, 0.18));
+}
+
+/* Workflow */
+.workflow-track {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.workflow-step {
+    min-height: 206px;
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(69, 200, 255, 0.18);
+    background: rgba(69, 200, 255, 0.06);
+}
+
+.workflow-arrow {
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(69, 200, 255, 0.15), rgba(0, 240, 255, 0.8), rgba(69, 200, 255, 0.15));
+}
+
+/* Implementation */
+.implementation-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.step-card {
+    min-height: 220px;
+}
+
+.step-number {
+    margin-bottom: 1rem;
+}
+
+/* Status and information panels */
+.status-list div,
+.info-list div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid rgba(69, 200, 255, 0.12);
+}
+
+.status-list div:last-child,
+.info-list div:last-child {
+    border-bottom: 0;
+}
+
+.status-list strong,
+.info-list strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Demo */
+.demo-stage {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.5rem;
+}
+
+.demo-node {
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.8rem;
+    border-radius: 20px;
+    border: 1px solid rgba(69, 200, 255, 0.18);
+    background: rgba(69, 200, 255, 0.05);
+    color: var(--muted);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
+}
+
+.demo-node.active {
+    color: var(--text);
+    border-color: rgba(0, 240, 255, 0.5);
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.16);
+    transform: translateY(-4px);
+}
+
+.demo-node.complete {
+    color: var(--text);
+    border-color: rgba(79, 255, 176, 0.48);
+    box-shadow: 0 0 22px rgba(79, 255, 176, 0.16);
+}
+
+.demo-connector {
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(69, 200, 255, 0.12), rgba(69, 200, 255, 0.75), rgba(69, 200, 255, 0.12));
+}
+
+.demo-console h2,
+.content-card h2,
+.feature-card h3,
+.workflow-step h3,
+.step-card h2,
+.site-footer h3,
+.timeline-step h3 {
+    margin-top: 0;
+}
+
+.demo-log {
+    max-height: 220px;
+    overflow: auto;
+}
+
+/* Footer */
+.site-footer {
+    padding: 2rem 0 3rem;
+    border-top: 1px solid rgba(109, 194, 255, 0.1);
+    background: rgba(4, 8, 14, 0.82);
+}
+
+/* Motion */
+.reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-delay-1 {
+    transition-delay: 110ms;
+}
+
+.reveal-delay-2 {
+    transition-delay: 220ms;
+}
+
+.feature-card:hover,
+.content-card:hover,
+.step-card:hover,
+.mini-card:hover,
+.workflow-step:hover,
+.arch-node:hover {
+    transform: translateY(-6px);
+    border-color: rgba(0, 240, 255, 0.28);
+}
+
+.feature-card,
+.content-card,
+.step-card,
+.mini-card,
+.workflow-step,
+.arch-node {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+@keyframes scan {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(220px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Responsive rules */
+@media (max-width: 1100px) {
+    .architecture-grid,
+    .four-up,
+    .three-up {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .workflow-track,
+    .demo-stage {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-arrow,
+    .demo-connector {
+        width: 2px;
+        height: 28px;
+        justify-self: center;
+        background: linear-gradient(180deg, rgba(69, 200, 255, 0.15), rgba(0, 240, 255, 0.8), rgba(69, 200, 255, 0.15));
+    }
+
+    .node-policy,
+    .node-app {
+        right: 40px;
+    }
+}
+
+@media (max-width: 900px) {
+    .hero-grid,
+    .split-layout,
+    .two-up,
+    .demo-grid,
+    .footer-grid,
+    .implementation-stack,
+    .hero-stats,
+    .architecture-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .site-nav {
+        position: absolute;
+        top: calc(100% + 0.75rem);
+        left: 1rem;
+        right: 1rem;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.8rem;
+        background: rgba(3, 8, 15, 0.96);
+        border: 1px solid rgba(69, 200, 255, 0.18);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+    }
+
+    .site-nav.open {
+        display: flex;
+    }
+
+    .nav-toggle {
+        display: inline-flex;
+    }
+
+    .hero-panel {
+        padding-top: 5rem;
+    }
+
+    .hero-visual {
+        min-height: 360px;
+    }
+
+    .control-panel {
+        inset: 1rem;
+    }
+
+    .diagram-stage {
+        min-height: 620px;
+    }
+
+    .arch-node {
+        min-width: 150px;
+    }
+
+    .node-user {
+        top: 36px;
+        left: 28px;
+    }
+
+    .node-idp {
+        top: 144px;
+        left: 28px;
+    }
+
+    .node-zscaler {
+        top: 274px;
+        left: 28px;
+    }
+
+    .node-policy {
+        top: 392px;
+        left: 28px;
+    }
+
+    .node-app {
+        top: 510px;
+        left: 28px;
+        right: auto;
+    }
+
+    .line-u-z,
+    .line-idp-z,
+    .line-z-p,
+    .line-p-a {
+        width: 2px;
+        left: 116px;
+        background: linear-gradient(180deg, rgba(69, 200, 255, 0.18), rgba(69, 200, 255, 0.72), rgba(69, 200, 255, 0.18));
+    }
+
+    .line-u-z {
+        top: 98px;
+        height: 80px;
+    }
+
+    .line-idp-z {
+        top: 208px;
+        height: 84px;
+    }
+
+    .line-z-p {
+        top: 330px;
+        height: 78px;
+    }
+
+    .line-p-a {
+        top: 450px;
+        height: 76px;
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        width: min(100% - 1.2rem, var(--max-width));
+    }
+
+    .feature-card,
+    .content-card,
+    .step-card,
+    .system-status,
+    .demo-console,
+    .cta-card,
+    .timeline-panel,
+    .diagram-card,
+    .workflow-track {
+        padding: 1.1rem;
+    }
+
+    .hero-copy h1 {
+        font-size: 2.4rem;
+    }
+
+    .button,
+    .site-nav a,
+    .nav-toggle {
+        width: 100%;
+    }
+
+    .cta-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .signal-grid,
+    .three-up,
+    .four-up {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-shell">
+            <a class="brand" href="index.html">
+                <span class="brand-mark"></span>
+                <span class="brand-text">ZTNA // ZSCALER</span>
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
+            <nav class="site-nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About ZTNA</a>
+                <a href="zscaler.html">About Zscaler</a>
+                <a href="architecture.html">Architecture</a>
+                <a href="workflow.html">Workflow</a>
+                <a href="implementation.html">Implementation</a>
+                <a href="security.html">Security</a>
+                <a class="active" href="demo.html">Demo</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-main">
+        <section class="page-hero narrow-hero">
+            <div class="container reveal">
+                <p class="eyebrow">Demo / Simulation</p>
+                <h1>Interactive ZTNA connection flow</h1>
+                <p class="lead">Run the simulation to visualize how the request moves through authentication, policy evaluation, and secure brokering.</p>
+            </div>
+        </section>
+
+        <section class="section-shell">
+            <div class="container demo-grid">
+                <div class="demo-stage glass-card reveal">
+                    <div class="demo-node" data-step="0">User</div>
+                    <div class="demo-connector"></div>
+                    <div class="demo-node" data-step="1">Identity Provider</div>
+                    <div class="demo-connector"></div>
+                    <div class="demo-node" data-step="2">Policy Engine</div>
+                    <div class="demo-connector"></div>
+                    <div class="demo-node" data-step="3">Zscaler Broker</div>
+                    <div class="demo-connector"></div>
+                    <div class="demo-node" data-step="4">Application</div>
+                </div>
+                <aside class="glass-card demo-console reveal reveal-delay-1">
+                    <h2>Simulation Console</h2>
+                    <p id="demoStatus">Ready to validate the session.</p>
+                    <div class="demo-actions">
+                        <button class="button button-primary" id="runSimulation" type="button">Run Simulation</button>
+                        <button class="button button-secondary" id="resetSimulation" type="button">Reset</button>
+                    </div>
+                    <ul class="demo-log" id="demoLog">
+                        <li>Waiting for a user access request.</li>
+                    </ul>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h3>Demo</h3>
+                <p>The simulation demonstrates how Zero Trust decisions are made before a session reaches the private application.</p>
+            </div>
+            <div>
+                <p>Demo Flow</p>
+                <ul>
+                    <li>Authentication</li>
+                    <li>Policy evaluation</li>
+                    <li>Brokered app access</li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+// Shared site interactions: mobile navigation, reveal animations, and the demo simulation.
+document.addEventListener("DOMContentLoaded", () => {
+    const navToggle = document.querySelector(".nav-toggle");
+    const siteNav = document.querySelector(".site-nav");
+
+    if (navToggle && siteNav) {
+        navToggle.addEventListener("click", () => {
+            const isOpen = siteNav.classList.toggle("open");
+            navToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+    }
+
+    const revealItems = document.querySelectorAll(".reveal");
+
+    if ("IntersectionObserver" in window && revealItems.length > 0) {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("is-visible");
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            {
+                threshold: 0.18,
+            }
+        );
+
+        revealItems.forEach((item) => observer.observe(item));
+    } else {
+        revealItems.forEach((item) => item.classList.add("is-visible"));
+    }
+
+    // Demo page simulation logic.
+    const runButton = document.getElementById("runSimulation");
+    const resetButton = document.getElementById("resetSimulation");
+    const demoStatus = document.getElementById("demoStatus");
+    const demoLog = document.getElementById("demoLog");
+    const demoNodes = Array.from(document.querySelectorAll(".demo-node"));
+
+    const simulationSteps = [
+        "User access request received from the endpoint.",
+        "Identity Provider validates the user and applies MFA.",
+        "Policy Engine checks role, device posture, and session context.",
+        "Zscaler brokers a secure path to the approved private application.",
+        "Application access granted with least-privilege scope.",
+    ];
+
+    let simulationRunning = false;
+
+    const appendLog = (message) => {
+        if (!demoLog) {
+            return;
+        }
+
+        const item = document.createElement("li");
+        item.textContent = message;
+        demoLog.appendChild(item);
+    };
+
+    const resetSimulation = () => {
+        demoNodes.forEach((node) => {
+            node.classList.remove("active", "complete");
+        });
+
+        if (demoLog) {
+            demoLog.innerHTML = "";
+            appendLog("Waiting for a user access request.");
+        }
+
+        if (demoStatus) {
+            demoStatus.textContent = "Ready to validate the session.";
+        }
+
+        simulationRunning = false;
+    };
+
+    const runSimulation = async () => {
+        if (simulationRunning || demoNodes.length === 0) {
+            return;
+        }
+
+        simulationRunning = true;
+        resetSimulation();
+        simulationRunning = true;
+
+        for (const [index, message] of simulationSteps.entries()) {
+            const currentNode = demoNodes[index];
+
+            if (currentNode) {
+                currentNode.classList.add("active");
+            }
+
+            if (demoStatus) {
+                demoStatus.textContent = message;
+            }
+
+            appendLog(message);
+            await new Promise((resolve) => window.setTimeout(resolve, 900));
+
+            if (currentNode) {
+                currentNode.classList.remove("active");
+                currentNode.classList.add("complete");
+            }
+        }
+
+        if (demoStatus) {
+            demoStatus.textContent = "Simulation complete. The private application is available through brokered Zero Trust access.";
+        }
+
+        appendLog("Session completed with monitoring and audit visibility enabled.");
+        simulationRunning = false;
+    };
+
+    if (runButton) {
+        runButton.addEventListener("click", runSimulation);
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener("click", resetSimulation);
+    }
+});
+    </script>
+</body>
+</html>

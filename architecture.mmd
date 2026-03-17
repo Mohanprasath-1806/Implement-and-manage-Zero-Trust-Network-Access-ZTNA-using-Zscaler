@@ -1,0 +1,9 @@
+flowchart LR
+    U[User Device\nZscaler Client Connector] --> Z[Zscaler Cloud\nZTNA Broker]
+    U --> I[Identity Provider\nAzure AD / Okta]
+    I --> Z
+    Z --> P[Policy Engine\nIdentity + Device + Context]
+    P -->|Permit| A[Application Server\nPrivate App in DC / Cloud]
+    P -->|Deny| D[Access Denied]
+    A --> L[Logs and Monitoring Dashboard]
+    Z --> L

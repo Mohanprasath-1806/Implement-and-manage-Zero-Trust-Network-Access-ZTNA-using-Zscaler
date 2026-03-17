@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant User as User Device
+    participant Client as Zscaler Client Connector
+    participant IdP as Identity Provider
+    participant Z as Zscaler Cloud
+    participant Policy as Policy Engine
+    participant App as Application Server
+
+    User->>Client: Launch private application
+    Client->>Z: Forward access request
+    Z->>IdP: Request user authentication
+    IdP-->>User: Prompt credentials and MFA
+    User-->>IdP: Submit verified identity
+    IdP-->>Z: Send identity assertion and groups
+    Z->>Policy: Evaluate identity, posture, location
+    Policy-->>Z: Permit or deny decision
+    alt Permit
+        Z->>App: Broker secure outbound connection
+        App-->>User: Provide application session
+    else Deny
+        Z-->>User: Block access and log event
+    end

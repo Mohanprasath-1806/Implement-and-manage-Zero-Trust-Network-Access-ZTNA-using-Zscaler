@@ -1,0 +1,10 @@
+flowchart TD
+    S[Start] --> U[User Requests Private Application]
+    U --> A[Authenticate with Azure AD / Okta]
+    A --> M[Complete MFA]
+    M --> P[Zscaler Evaluates Policies]
+    P --> C{Authorized?}
+    C -->|Yes| Z[Create Secure ZPA Connection]
+    Z --> R[Grant Application Access]
+    R --> G[Generate Logs and Monitoring Data]
+    C -->|No| X[Block Access and Alert Admin]
